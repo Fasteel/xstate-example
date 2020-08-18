@@ -1,26 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import './App.css'
+import machine from './state'
+import { useMachine } from '@xstate/react'
 
-function App() {
+// todo regarder comment envoyer des données depuis ici dans le context
+function App () {
+  const [state, send] = useMachine(machine)
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container'>
+      <div className='row row-cols-3 justify-content-center'>
+        {state.value === 'finished' && (
+          <div className='alert alert-info' role='alert'>
+            Mon username est {state.context.username}
+          </div>
+        )}
+        {state.value === 'editingUsername' && (
+          <form>
+            <div className='form-group'>
+              <label htmlFor='username'>Username</label>
+              <input
+                type='text' className='form-control' onChange={e => {
+                  send({
+                    type: 'UPDATE_USERNAME',
+                    username: e.target.value
+                  })
+                }}
+              />
+            </div>
+            <button
+              type='submit'
+              className='btn btn-primary'
+              onClick={(event) => {
+                event.preventDefault()
+                send('SUBMIT_USERNAME')
+              }}
+            >
+              Enregistrer
+            </button>
+          </form>
+        )}
+      </div>
+      <div className='row row-cols-3 justify-content-center py-4'>
+        <pre>
+          {JSON.stringify({
+            context: state.context,
+            state: state.value
+          }, null, 2)}
+        </pre>
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
